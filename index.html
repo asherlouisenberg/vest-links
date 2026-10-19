@@ -57,7 +57,11 @@
     .search { width: 100%; height: 42px; padding: 0 14px 0 39px; border: 1px solid var(--line); border-radius: 11px; outline: 0; color: #20322f; background: #fff; }
     .search:focus, input:focus, select:focus { border-color: #79ae98; box-shadow: 0 0 0 3px rgb(41 121 99 / 10%); }
 
-    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding-bottom: 54px; }
+    .category-section { margin-bottom: 36px; }
+    .category-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 14px; }
+    .category-heading h3 { margin: 0; font-size: 17px; letter-spacing: -.03em; }
+    .category-count { color: var(--muted); font-size: 11px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     .card { min-height: 184px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); box-shadow: 0 6px 24px rgb(35 59 48 / 3%); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
     .card:hover { transform: translateY(-3px); border-color: #cbded2; box-shadow: 0 12px 28px rgb(35 59 48 / 7%); }
     .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -71,6 +75,9 @@
     .visit svg { width: 14px; height: 14px; }
     .remove-link { padding: 5px 8px; border: 0; border-radius: 7px; color: #8a625b; background: transparent; font-size: 11px; cursor: pointer; }
     .remove-link:hover { background: #fbf0ed; }
+    .edit-link { padding: 5px 8px; border: 0; border-radius: 7px; color: var(--green-dark); background: var(--green-soft); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .edit-link:hover { background: #dcece2; }
+    .manage-actions { display: flex; gap: 5px; }
     .empty { grid-column: 1 / -1; padding: 36px 16px; border: 1px dashed #d6e1da; border-radius: 14px; color: var(--muted); text-align: center; }
 
     .custom-section { margin: 0 0 60px; padding: 25px; border: 1px solid #dce8e0; border-radius: 18px; background: linear-gradient(120deg, #edf5f0, #f5f8f5 75%); }
@@ -80,10 +87,17 @@
     .primary-button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; padding: 0 15px; border: 0; border-radius: 10px; color: #fff; background: var(--green); font-size: 13px; font-weight: 750; cursor: pointer; transition: background .15s, transform .15s; }
     .primary-button:hover { transform: translateY(-1px); background: var(--green-dark); }
     .primary-button svg { width: 16px; height: 16px; }
+    #toggle-form[hidden] { display: none; }
     .link-form { display: none; grid-template-columns: 1.1fr 1.5fr 1fr auto; align-items: end; gap: 12px; margin-top: 22px; }
     .link-form.is-open { display: grid; }
     .field { display: grid; gap: 6px; color: #4c5c54; font-size: 11px; font-weight: 750; }
     .field input, .field select { width: 100%; height: 41px; padding: 0 11px; border: 1px solid #dce5df; border-radius: 9px; outline: 0; color: #20322f; background: #fff; font-size: 13px; }
+    .manage-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .secondary-button { min-height: 40px; padding: 0 13px; border: 1px solid #d5e2d9; border-radius: 10px; color: var(--green-dark); background: #fff; font-size: 12px; font-weight: 750; cursor: pointer; }
+    .secondary-button:hover { background: #f6faf7; }
+    .gate-form { display: none; grid-template-columns: minmax(0, 260px) auto; align-items: end; gap: 10px; margin-top: 18px; }
+    .gate-form.is-open { display: grid; }
+    .gate-form .primary-button { min-height: 41px; }
     .form-error { min-height: 1.4em; margin: 8px 0 0; color: #a14132; font-size: 12px; }
     footer { padding: 0 0 28px; color: #87928c; font-size: 11px; text-align: center; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
@@ -108,6 +122,7 @@
       .custom-section { padding: 19px 16px; }
       .custom-heading { align-items: start; flex-direction: column; }
       .link-form { grid-template-columns: 1fr; }
+      .gate-form { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -151,214 +166,295 @@
           <input class="search" id="search" type="search" placeholder="Search links..." autocomplete="off">
         </label>
       </div>
-      <div class="grid" id="link-grid" aria-live="polite"></div>
+      <div id="link-categories" aria-live="polite"></div>
     </section>
 
     <section class="custom-section" aria-labelledby="add-heading">
       <div class="custom-heading">
         <div>
-          <h2 id="add-heading">Keep your essentials close</h2>
-          <p>Add an article, a useful website, or another project page.</p>
+          <h2 id="add-heading">Manage your link library</h2>
+          <p>Unlock editing to add, update, or remove links.</p>
         </div>
-        <button class="primary-button" id="toggle-form" type="button" aria-expanded="false" aria-controls="link-form">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Add a link
-        </button>
+        <div class="manage-tools">
+          <button class="secondary-button" id="manage-button" type="button" aria-expanded="false" aria-controls="password-form">Manage links</button>
+          <button class="primary-button" id="toggle-form" type="button" aria-expanded="false" aria-controls="link-form" hidden>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add a link
+          </button>
+        </div>
       </div>
+      <form class="gate-form" id="password-form">
+        <label class="field">Management password
+          <input id="manage-password" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-button" type="submit">Unlock editing</button>
+      </form>
       <form class="link-form" id="link-form">
         <label class="field">Name
           <input id="link-title" name="title" type="text" maxlength="80" placeholder="e.g. My latest paper" required>
+        </label>
+        <label class="field">Description
+          <input id="link-description" name="description" type="text" maxlength="160" placeholder="A short note about this link">
         </label>
         <label class="field">Web address
           <input id="link-url" name="url" type="url" placeholder="https://example.com" required>
         </label>
         <label class="field">Collection
           <select id="link-category" name="category">
-            <option>Article</option>
-            <option>Research</option>
-            <option>Website</option>
-            <option>My pages</option>
+            <option>Article databases</option>
+            <option>Our apps</option>
+            <option>Patient information</option>
+            <option>Training videos</option>
           </select>
         </label>
-        <button class="primary-button" type="submit">Save link</button>
+        <div class="manage-tools">
+          <button class="primary-button" id="save-link" type="submit">Save link</button>
+          <button class="secondary-button" id="cancel-edit" type="button">Cancel</button>
+        </div>
       </form>
       <p class="form-error" id="form-error" role="status"></p>
     </section>
   </main>
 
-  <footer class="shell">Custom links are saved in this browser on this device.</footer>
+  <footer class="shell">Links are saved in this browser. The page-level password is not secure access control for a publicly shared site.</footer>
 
   <script>
+    const categories = ["Article databases", "Our apps", "Patient information", "Training videos"];
     const starterLinks = [
       {
+        id: "app-svimmelhedsside",
         title: "Svimmelhedsside",
         description: "Your vestibular and dizziness information site.",
-        category: "My pages",
+        category: "Our apps",
         url: "Svimmelhedsside/site.html"
       },
       {
+        id: "app-idea-board",
         title: "Idea Board",
         description: "Capture, sort, and revisit ideas for your work.",
-        category: "My pages",
+        category: "Our apps",
         url: "idehd.html"
       },
       {
+        id: "app-pomodoro",
         title: "Pomodoro Timer",
         description: "A focus timer with a simple task checklist.",
-        category: "My pages",
+        category: "Our apps",
         url: "index.html"
       },
       {
+        id: "app-qr-generator",
         title: "QR Code Generator",
         description: "Create and download a custom QR code.",
-        category: "My pages",
+        category: "Our apps",
         url: "QR%20code%20generator.html"
       },
       {
+        id: "db-pubmed",
         title: "PubMed",
         description: "Search biomedical literature and clinical research.",
-        category: "Research",
+        category: "Article databases",
         url: "https://pubmed.ncbi.nlm.nih.gov/"
       },
       {
-        title: "Google Scholar",
-        description: "Discover scholarly articles, authors, and citations.",
-        category: "Research",
-        url: "https://scholar.google.com/"
-      },
-      {
-        title: "Bárány Society",
-        description: "International society for neuro-otology and vestibular research.",
-        category: "Research",
-        url: "https://www.thebaranysociety.org/"
-      },
-      {
-        title: "Vestibular Disorders Association",
-        description: "Education and support resources about vestibular disorders.",
-        category: "Website",
-        url: "https://vestibular.org/"
-      },
-      {
+        id: "db-cochrane",
         title: "Cochrane Library",
         description: "Systematic reviews and evidence for health care.",
-        category: "Research",
+        category: "Article databases",
         url: "https://www.cochranelibrary.com/"
       },
       {
+        id: "db-embase",
+        title: "Embase",
+        description: "Biomedical literature database for evidence and drug research.",
+        category: "Article databases",
+        url: "https://www.embase.com/"
+      },
+      {
+        id: "db-kn",
+        title: "kn.dk",
+        description: "Knowledge and research resource.",
+        category: "Article databases",
+        url: "https://kn.dk/"
+      },
+      {
+        id: "patient-veda",
+        title: "Vestibular Disorders Association",
+        description: "Education and support resources about vestibular disorders.",
+        category: "Patient information",
+        url: "https://vestibular.org/"
+      },
+      {
+        id: "patient-nice",
         title: "NICE guidance",
         description: "Evidence-based guidance and recommendations for care.",
-        category: "Website",
+        category: "Patient information",
         url: "https://www.nice.org.uk/"
+      },
+      {
+        id: "training-videos",
+        title: "Vestibular rehabilitation training videos",
+        description: "Search for vestibular rehabilitation demonstrations and training videos.",
+        category: "Training videos",
+        url: "https://www.youtube.com/results?search_query=vestibular+rehabilitation+training"
       }
     ];
 
-    const grid = document.getElementById("link-grid");
+    const categoryContainer = document.getElementById("link-categories");
     const search = document.getElementById("search");
     const form = document.getElementById("link-form");
+    const passwordForm = document.getElementById("password-form");
     const formError = document.getElementById("form-error");
     const toggleForm = document.getElementById("toggle-form");
-    const storageKey = "vestibular-research-links";
-    let customLinks = [];
+    const manageButton = document.getElementById("manage-button");
+    const saveButton = document.getElementById("save-link");
+    const storageKey = "vestibular-research-library-v2";
+    const legacyStorageKey = "vestibular-research-links";
+    const managementPassword = "motion-research";
+    let links = [...starterLinks];
     let storageAvailable = true;
+    let manageUnlocked = false;
+    let editingId = null;
 
     try {
       const savedLinks = localStorage.getItem(storageKey);
       if (savedLinks) {
-        const parsedLinks = JSON.parse(savedLinks);
-        if (!Array.isArray(parsedLinks)) throw new Error("Saved links are not a list.");
-        customLinks = parsedLinks;
+        const savedLibrary = JSON.parse(savedLinks);
+        if (!Array.isArray(savedLibrary) || savedLibrary.some(link =>
+          !link || typeof link.id !== "string" || typeof link.title !== "string" ||
+          typeof link.url !== "string" || !categories.includes(link.category)
+        )) {
+          throw new Error("Saved link library has an invalid format.");
+        }
+        links = savedLibrary;
+      } else {
+        const savedCustomLinks = localStorage.getItem(legacyStorageKey);
+        if (savedCustomLinks) {
+          const parsedCustomLinks = JSON.parse(savedCustomLinks);
+          if (!Array.isArray(parsedCustomLinks)) throw new Error("Saved links are not a list.");
+          const legacyCategories = {
+            Article: "Article databases",
+            Research: "Article databases",
+            Website: "Patient information",
+            "My pages": "Our apps"
+          };
+          links = [
+            ...starterLinks,
+            ...parsedCustomLinks.map((link, index) => ({
+              id: link.customId || `legacy-${Date.now()}-${index}`,
+              title: link.title,
+              description: link.description || "",
+              category: categories.includes(link.category) ? link.category : legacyCategories[link.category] || "Patient information",
+              url: link.url
+            }))
+          ];
+        }
       }
     } catch (error) {
       storageAvailable = false;
-      formError.textContent = "Saved links could not be loaded. You can still browse the library.";
+      formError.textContent = "Saved links could not be loaded. The default link library is shown.";
       console.error("Unable to load saved links.", error);
-    }
-
-    function iconFor(category) {
-      if (category === "Article") {
-        return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.8h7l4 4V20H7a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6m-6 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
-      }
-      if (category === "My pages") {
-        return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
-      }
-      return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.7 1.7m2.7 4a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.7-1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
     }
 
     function renderLinks() {
       const query = search.value.trim().toLowerCase();
-      const links = [...starterLinks, ...customLinks].filter(link =>
+      const filteredLinks = links.filter(link =>
         `${link.title} ${link.description || ""} ${link.category} ${link.url}`.toLowerCase().includes(query)
       );
-      grid.replaceChildren();
+      categoryContainer.replaceChildren();
 
-      if (links.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "empty";
-        empty.textContent = "No links found. Try a different search or add a new link.";
-        grid.append(empty);
-        return;
-      }
+      categories.forEach(category => {
+        const categoryLinks = filteredLinks.filter(link => link.category === category);
+        if (query && categoryLinks.length === 0) return;
 
-      links.forEach(link => {
-        const article = document.createElement("article");
-        article.className = "card";
-        const top = document.createElement("div");
-        top.className = "card-top";
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        icon.innerHTML = iconFor(link.category);
-        const badge = document.createElement("span");
-        badge.className = "badge";
-        badge.textContent = link.category;
-        top.append(icon, badge);
-
+        const section = document.createElement("section");
+        section.className = "category-section";
+        const heading = document.createElement("div");
+        heading.className = "category-heading";
         const title = document.createElement("h3");
-        title.textContent = link.title;
-        const description = document.createElement("p");
-        description.textContent = link.description || link.url;
-        const bottom = document.createElement("div");
-        bottom.className = "card-bottom";
-        const visit = document.createElement("a");
-        visit.className = "visit";
-        visit.href = link.url;
-        visit.target = "_blank";
-        visit.rel = "noopener noreferrer";
-        visit.append(document.createTextNode("Open link"));
-        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        arrow.setAttribute("viewBox", "0 0 24 24");
-        arrow.setAttribute("fill", "none");
-        arrow.setAttribute("aria-hidden", "true");
-        arrow.innerHTML = '<path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
-        visit.append(arrow);
-        bottom.append(visit);
+        title.textContent = category;
+        const count = document.createElement("span");
+        count.className = "category-count";
+        count.textContent = `${categoryLinks.length} ${categoryLinks.length === 1 ? "link" : "links"}`;
+        heading.append(title, count);
 
-        if (link.customId) {
-          const remove = document.createElement("button");
-          remove.className = "remove-link";
-          remove.type = "button";
-          remove.textContent = "Remove";
-          remove.setAttribute("aria-label", `Remove ${link.title}`);
-          remove.addEventListener("click", () => {
-            const previousLinks = customLinks;
-            customLinks = customLinks.filter(item => item.customId !== link.customId);
-            if (!saveLinks()) customLinks = previousLinks;
-            renderLinks();
-          });
-          bottom.append(remove);
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        if (categoryLinks.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "empty";
+          empty.textContent = manageUnlocked ? "No links here yet. Add one using the button below." : "No links in this category yet.";
+          grid.append(empty);
         }
 
-        article.append(top, title, description, bottom);
-        grid.append(article);
+        categoryLinks.forEach(link => {
+          const card = document.createElement("article");
+          card.className = "card";
+          const top = document.createElement("div");
+          top.className = "card-top";
+          const icon = document.createElement("span");
+          icon.className = "icon";
+          icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.7 1.7m2.7 4a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.7-1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = category;
+          top.append(icon, badge);
+
+          const cardTitle = document.createElement("h3");
+          cardTitle.textContent = link.title;
+          const description = document.createElement("p");
+          description.textContent = link.description || link.url;
+          const bottom = document.createElement("div");
+          bottom.className = "card-bottom";
+          const visit = document.createElement("a");
+          visit.className = "visit";
+          visit.href = link.url;
+          visit.target = "_blank";
+          visit.rel = "noopener noreferrer";
+          visit.append(document.createTextNode("Open link"));
+          const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          arrow.setAttribute("viewBox", "0 0 24 24");
+          arrow.setAttribute("fill", "none");
+          arrow.setAttribute("aria-hidden", "true");
+          arrow.innerHTML = '<path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+          visit.append(arrow);
+          bottom.append(visit);
+
+          if (manageUnlocked) {
+            const actions = document.createElement("div");
+            actions.className = "manage-actions";
+            const edit = document.createElement("button");
+            edit.className = "edit-link";
+            edit.type = "button";
+            edit.textContent = "Edit";
+            edit.setAttribute("aria-label", `Edit ${link.title}`);
+            edit.addEventListener("click", () => editLink(link.id));
+            const remove = document.createElement("button");
+            remove.className = "remove-link";
+            remove.type = "button";
+            remove.textContent = "Remove";
+            remove.setAttribute("aria-label", `Remove ${link.title}`);
+            remove.addEventListener("click", () => removeLink(link.id));
+            actions.append(edit, remove);
+            bottom.append(actions);
+          }
+
+          card.append(top, cardTitle, description, bottom);
+          grid.append(card);
+        });
+
+        section.append(heading, grid);
+        categoryContainer.append(section);
       });
     }
 
     function saveLinks() {
       if (!storageAvailable) {
-        formError.textContent = "Browser storage is unavailable. This link cannot be saved.";
+        formError.textContent = "Browser storage is unavailable. Changes cannot be saved.";
         return false;
       }
       try {
-        localStorage.setItem(storageKey, JSON.stringify(customLinks));
+        localStorage.setItem(storageKey, JSON.stringify(links));
         formError.textContent = "";
         return true;
       } catch (error) {
@@ -368,17 +464,96 @@
       }
     }
 
+    function resetLinkForm() {
+      editingId = null;
+      form.reset();
+      form.classList.remove("is-open");
+      toggleForm.setAttribute("aria-expanded", "false");
+      saveButton.textContent = "Save link";
+    }
+
+    function editLink(id) {
+      const link = links.find(item => item.id === id);
+      if (!link) return;
+      editingId = id;
+      document.getElementById("link-title").value = link.title;
+      document.getElementById("link-description").value = link.description || "";
+      document.getElementById("link-url").value = link.url;
+      document.getElementById("link-category").value = link.category;
+      form.classList.add("is-open");
+      toggleForm.setAttribute("aria-expanded", "true");
+      saveButton.textContent = "Save changes";
+      document.getElementById("link-title").focus();
+      form.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function removeLink(id) {
+      const link = links.find(item => item.id === id);
+      if (!link || !confirm(`Remove "${link.title}" from the library?`)) return;
+      const previousLinks = links;
+      links = links.filter(item => item.id !== id);
+      if (!saveLinks()) links = previousLinks;
+      renderLinks();
+    }
+
+    function setManageUnlocked(unlocked) {
+      manageUnlocked = unlocked;
+      toggleForm.hidden = !unlocked;
+      manageButton.textContent = unlocked ? "Lock editing" : "Manage links";
+      manageButton.setAttribute("aria-expanded", "false");
+      passwordForm.classList.remove("is-open");
+      passwordForm.reset();
+      if (!unlocked) resetLinkForm();
+      renderLinks();
+    }
+
     toggleForm.addEventListener("click", () => {
       const isOpen = form.classList.toggle("is-open");
       toggleForm.setAttribute("aria-expanded", String(isOpen));
-      if (isOpen) document.getElementById("link-title").focus();
+      if (isOpen) {
+        editingId = null;
+        form.reset();
+        saveButton.textContent = "Save link";
+        document.getElementById("link-title").focus();
+      } else {
+        resetLinkForm();
+      }
+    });
+
+    manageButton.addEventListener("click", () => {
+      if (manageUnlocked) {
+        setManageUnlocked(false);
+        formError.textContent = "Link editing is locked.";
+        return;
+      }
+      const isOpen = passwordForm.classList.toggle("is-open");
+      manageButton.setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) document.getElementById("manage-password").focus();
+    });
+
+    passwordForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const passwordInput = document.getElementById("manage-password");
+      if (passwordInput.value !== managementPassword) {
+        formError.textContent = "Incorrect password. Editing remains locked.";
+        passwordInput.select();
+        return;
+      }
+      formError.textContent = "Editing unlocked for this browser session.";
+      setManageUnlocked(true);
     });
 
     search.addEventListener("input", renderLinks);
+    document.getElementById("cancel-edit").addEventListener("click", resetLinkForm);
 
     form.addEventListener("submit", event => {
       event.preventDefault();
+      if (!manageUnlocked) {
+        formError.textContent = "Unlock editing before changing links.";
+        return;
+      }
       const title = document.getElementById("link-title").value.trim();
+      const description = document.getElementById("link-description").value.trim();
       const urlInput = document.getElementById("link-url");
       const category = document.getElementById("link-category").value;
       const urlValue = urlInput.value.trim();
@@ -400,19 +575,29 @@
         return;
       }
 
-      customLinks.unshift({
-        customId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        title,
-        category,
-        url: url.href
-      });
+      const wasEditing = Boolean(editingId);
+      const previousLinks = links;
+      if (editingId) {
+        links = links.map(link => link.id === editingId
+          ? { ...link, title, description, category, url: url.href }
+          : link
+        );
+      } else {
+        links = [{
+          id: `link-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          title,
+          description,
+          category,
+          url: url.href
+        }, ...links];
+      }
 
       if (saveLinks()) {
-        form.reset();
+        resetLinkForm();
         renderLinks();
-        document.getElementById("link-title").focus();
+        formError.textContent = wasEditing ? "Link updated." : "Link added.";
       } else {
-        customLinks.shift();
+        links = previousLinks;
       }
     });
 
